@@ -1,0 +1,88 @@
+version: "3"
+services:
+  redis:
+    image: redis:7.2.2
+    container_name: security_redis
+    hostname: security-redis
+    restart: always
+    volumes:
+      - redisdata:/data
+    networks:
+      - opencti_security
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.4
+    container_name: security_elastic
+    hostname: security-elastic
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - opencti_security
+    environment:
+      # Comment-out the line below for a cluster of multiple nodes
+      - discovery.type=single-node
+      - xpack.ml.enabled=false
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms${ELASTIC_MEMORY_SIZE} -Xmx${ELASTIC_MEMORY_SIZE}
+    restart: always
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+  minio:
+    image: minio/minio:RELEASE.2024-07-29T22-14-52Z
+    container_name: security_minio
+    hostname: security-minio
+    volumes:
+      - s3data:/data
+    ports:
+      - 9000:9000
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:9000/minio/health/live
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    restart: always
+    networks:
+      - opencti_security
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: security_rabbitmq
+    hostname: security-rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_NODENAME=rabbit01@localhost
+    volumes:
+      - amqpdata:/var/lib/rabbitmq
+    networks:
+      - opencti_security
+    restart: always
+x-dockge:
+  urls: []
+networks:
+  opencti_security:
+    external: true
+volumes:
+  redisdata:
+    external: true
+    name: opencti_redisdata
+  esdata:
+    external: true
+    name: opencti_esdata
+  amqpdata:
+    external: true
+    name: opencti_amqpdata
+  s3data:
+    external: true
+    name: opencti_s3data
