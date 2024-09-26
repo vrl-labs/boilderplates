@@ -1,0 +1,27 @@
+version: "3.3"
+services:
+  traefik:
+    image: traefik:${TFK_VER}
+    container_name: traefik
+    volumes:
+      - /home/system/stacks/traefik:/var/services/traefik
+      - ${DOCKER_SOCK}
+    ports:
+      - ${HTTP}:80
+      - ${HTTPS}:443
+      - ${TFK_DASH}:8080
+    command:
+      - --api
+      - --providers.docker=true
+      - --providers.docker.exposedByDefault=false
+      - --entrypoints.web.address=:${HTTPS}
+    networks:
+      - proxy
+      - backend
+    restart: always
+    depends_on: []
+networks:
+  proxy:
+    external: true
+  backend:
+    external: true
