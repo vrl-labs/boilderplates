@@ -1,0 +1,70 @@
+version: "3.8"
+volumes:
+  db_storage:
+    driver: local
+  n8n_storage:
+    driver: local
+  redis_storage:
+    driver: local
+x-shared: &a1
+  restart: always
+  image: n8nio/n8n:${N8N_VERSION:-1.60.1}
+  env_file: ./.env
+  user: 1000:1000
+  environment:
+    - EXECUTIONS_MODE=queue
+    - QUEUE_BULL_REDIS_HOST=redis
+    - QUEUE_HEALTH_CHECK_ACTIVE=true
+  links:
+    - postgres
+    - redis
+  volumes:
+    - n8n_storage:/home/node/.n8n
+  depends_on:
+    redis:
+      condition: service_healthy
+    postgres:
+      condition: service_healthy
+services:
+  postgres:
+    image: postgres:${POSTGRES_VERSION:-11}
+    container_name: postgres
+    restart: always
+    env_file: ./.env
+    volumes:
+      - db_storage:/var/lib/postgresql/data
+      - ./init-data.sh:/docker-entrypoint-initdb.d/init-data.sh
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  redis:
+    image: redis:${REDIS_VERSION:-7.4-alpine}
+    restart: always
+    container_name: redis
+    env_file: ./.env
+    volumes:
+      - redis_storage:/data
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  n8n:
+    <<: *a1
+    container_name: n8n
+    ports:
+      - 5678:5678
+  n8n-worker:
+    <<: *a1
+    container_name: n8n-worker
+    command: worker
+    depends_on:
+      - n8n
+networks: {}
