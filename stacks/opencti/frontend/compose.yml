@@ -1,0 +1,242 @@
+version: "3"
+services:
+  opencti:
+    image: opencti/platform:${OPENCTI_VER}
+    container_name: security_opencti
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=8096
+      - APP__PORT=8080
+      - APP__BASE_URL=${OPENCTI_BASE_URL}
+      - APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}
+      - APP__ADMIN__PASSWORD=${OPENCTI_ADMIN_PASSWORD}
+      - APP__ADMIN__TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - APP__APP_LOGS__LOGS_LEVEL=error
+      - REDIS__HOSTNAME=security-redis
+      - REDIS__PORT=6379
+      - ELASTICSEARCH__URL=http://security-elastic:9200
+      - MINIO__ENDPOINT=security-minio
+      - MINIO__PORT=9000
+      - MINIO__USE_SSL=false
+      - MINIO__ACCESS_KEY=${MINIO_ROOT_USER}
+      - MINIO__SECRET_KEY=${MINIO_ROOT_PASSWORD}
+      - RABBITMQ__HOSTNAME=security-rabbitmq
+      - RABBITMQ__PORT=5672
+      - RABBITMQ__PORT_MANAGEMENT=15672
+      - RABBITMQ__MANAGEMENT_SSL=false
+      - RABBITMQ__USERNAME=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ__PASSWORD=${RABBITMQ_DEFAULT_PASS}
+      - SMTP__HOSTNAME=${SMTP_HOSTNAME}
+      - SMTP__PORT=25
+      - PROVIDERS__LOCAL__STRATEGY=LocalStrategy
+    ports:
+      - 8080:8080
+    networks:
+      - opencti_security
+    restart: always
+  worker:
+    image: opencti/worker:${OPENCTI_VER}
+    networks:
+      - opencti_security
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - WORKER_LOG_LEVEL=info
+    depends_on:
+      opencti:
+        condition: ${SERVICE_CONDITION}
+    deploy:
+      # Comment-out the line below for a cluster of multiple nodes
+      mode: replicated
+      replicas: 3
+    restart: always
+  connector-export-file-stix:
+    image: opencti/connector-export-file-stix:${OPENCTI_VER}
+    container_name: security_connector-export-file-stix
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_EXPORT_FILE_STIX_ID}
+      - CONNECTOR_TYPE=INTERNAL_EXPORT_FILE
+      - CONNECTOR_NAME=ExportFileStix2
+      - CONNECTOR_SCOPE=application/json
+      - CONNECTOR_CONFIDENCE_LEVEL=15
+      - CONNECTOR_LOG_LEVEL=info
+    restart: always
+    networks:
+      - opencti_security
+    depends_on:
+      opencti:
+        condition: ${SERVICE_CONDITION}
+  connector-export-file-csv:
+    image: opencti/connector-export-file-csv:${OPENCTI_VER}
+    container_name: security_connector-export-file-csv
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_EXPORT_FILE_CSV_ID}
+      - CONNECTOR_TYPE=INTERNAL_EXPORT_FILE
+      - CONNECTOR_NAME=ExportFileCsv
+      - CONNECTOR_SCOPE=text/csv
+      - CONNECTOR_CONFIDENCE_LEVEL=15
+      - CONNECTOR_LOG_LEVEL=info
+    restart: always
+    networks:
+      - opencti_security
+    depends_on:
+      opencti:
+        condition: ${SERVICE_CONDITION}
+  connector-export-file-txt:
+    image: opencti/connector-export-file-txt:${OPENCTI_VER}
+    container_name: security_connector-export-file-txt
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_EXPORT_FILE_TXT_ID}
+      - CONNECTOR_TYPE=INTERNAL_EXPORT_FILE
+      - CONNECTOR_NAME=ExportFileTxt
+      - CONNECTOR_SCOPE=text/plain
+      - CONNECTOR_CONFIDENCE_LEVEL=15
+      - CONNECTOR_LOG_LEVEL=info
+    restart: always
+    networks:
+      - opencti_security
+    depends_on:
+      opencti:
+        condition: ${SERVICE_CONDITION}
+  connector-import-file-stix:
+    image: opencti/connector-import-file-stix:${OPENCTI_VER}
+    container_name: security_connector-import-file-stix
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_IMPORT_FILE_STIX_ID}
+      - CONNECTOR_TYPE=INTERNAL_IMPORT_FILE
+      - CONNECTOR_NAME=ImportFileStix
+      - CONNECTOR_VALIDATE_BEFORE_IMPORT=true
+      - CONNECTOR_SCOPE=application/json,text/xml
+      - CONNECTOR_AUTO=true
+      - CONNECTOR_CONFIDENCE_LEVEL=15
+      - CONNECTOR_LOG_LEVEL=info
+    restart: always
+    networks:
+      - opencti_security
+    depends_on:
+      opencti:
+        condition: ${SERVICE_CONDITION}
+  connector-import-document:
+    image: opencti/connector-import-document:${OPENCTI_VER}
+    container_name: security_connector-import-document
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_IMPORT_DOCUMENT_ID} # Valid UUIDv4
+      - CONNECTOR_TYPE=INTERNAL_IMPORT_FILE
+      - CONNECTOR_NAME=ImportDocument
+      - CONNECTOR_VALIDATE_BEFORE_IMPORT=true
+      - CONNECTOR_SCOPE=application/pdf,text/plain,text/html # From 0 (Unknown) to 100 (Fully trusted)
+      - CONNECTOR_AUTO=true
+      - CONNECTOR_ONLY_CONTEXTUAL=false
+      - CONNECTOR_CONFIDENCE_LEVEL=15
+      - CONNECTOR_LOG_LEVEL=info
+      - IMPORT_DOCUMENT_CREATE_INDICATOR=true
+    restart: always
+    networks:
+      - opencti_security
+    depends_on:
+      opencti:
+        condition: ${SERVICE_CONDITION}
+  connector-mitre:
+    image: opencti/connector-mitre:${OPENCTI_VER}
+    container_name: security_connector-mitre
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_IMPORT_ABUSEIP_ID} # Valid UUIDv4
+      - CONNECTOR_NAME=MITRE Datasets
+      - CONNECTOR_SCOPE=tool,report,malware,identity,campaign,intrusion-set,attack-pattern,course-of-action,x-mitre-data-source,x-mitre-data-component,x-mitre-matrix,x-mitre-tactic,x-mitre-collection
+      - CONNECTOR_RUN_AND_TERMINATE=false
+      - CONNECTOR_LOG_LEVEL=error # From 0 (Unknown) to 100 (Fully trusted)
+      - MITRE_REMOVE_STATEMENT_MARKING=true
+      - MITRE_INTERVAL=7
+    restart: always
+    networks:
+      - opencti_security
+    depends_on:
+      opencti:
+        condition: ${SERVICE_CONDITION}
+  connector-cisa-known-exploited-vulnerabilities:
+    image: opencti/connector-cisa-known-exploited-vulnerabilities:${OPENCTI_VER}
+    container_name: security_connector-cisa-known-exploited-vulnerabilities
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_IMPORT_CISA_ID} # Valid UUIDv4
+      - CONNECTOR_NAME=CISA Known Exploited Vulnerabilities
+      - CONNECTOR_SCOPE=cisa
+      - CONNECTOR_RUN_AND_TERMINATE=false
+      - CONNECTOR_LOG_LEVEL=error # From 0 (Unknown) to 100 (Fully trusted)
+      - CISA_CATALOG_URL=
+      - CISA_CREATE_INFRASTRUCTURES=false
+      - CISA_TLP=TLP:CLEAR
+      - CISA_INTERVAL=2
+    restart: always
+    networks:
+      - opencti_security
+    depends_on:
+      opencti:
+        condition: ${SERVICE_CONDITION}
+  connector-abuseipdb-ipblacklist:
+    image: opencti/connector-abuseipdb-ipblacklist:${OPENCTI_VER}
+    container_name: security_connector-abuseipdb-ipblacklist
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_IMPORT_ABUSEIP_ID} # Valid UUIDv4
+      - CONNECTOR_NAME=AbuseIPDB IP Blacklist
+      - CONNECTOR_VALIDATE_BEFORE_IMPORT=true
+      - CONNECTOR_SCOPE=abuseipdb # Validate any bundle before import
+      - CONNECTOR_AUTO=true
+      - CONNECTOR_ONLY_CONTEXTUAL=false # Enable/disable auto-import of file
+      - CONNECTOR_CONFIDENCE_LEVEL=80 # From 0 (Unknown) to 100 (Fully trusted)
+      - CONNECTOR_LOG_LEVEL=error
+      - ABUSEIPDB_URL=https://api.abuseipdb.com/api/v2/blacklist
+      - ABUSEIPDB_API_KEY=<API KEY>
+      - ABUSEIPDB_SCORE=100
+      - ABUSEIPDB_LIMIT=10000
+      - ABUSEIPDB_INTERVAL=2
+    restart: always
+    networks:
+      - opencti_security
+    depends_on:
+      opencti:
+        condition: ${SERVICE_CONDITION}
+  connector-abuse-ssl:
+    image: opencti/connector-abuse-ssl:${OPENCTI_VER}
+    container_name: security_connector-abuse-ssl
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}
+      - CONNECTOR_ID=${CONNECTOR_IMPORT_ABUSEIP_ID} # Valid UUIDv4
+      - CONNECTOR_NAME=Abuse.ch SSL Blacklist
+      - CONNECTOR_VALIDATE_BEFORE_IMPORT=true
+      - CONNECTOR_SCOPE=abusessl # Validate any bundle before import
+      - CONNECTOR_AUTO=true
+      - CONNECTOR_ONLY_CONTEXTUAL=false # Enable/disable auto-import of file
+      - CONNECTOR_CONFIDENCE_LEVEL=70 # Only extract data related to an entity (a report, a threat actor, etc.)
+      - CONNECTOR_LOG_LEVEL=error
+      - ABUSESSL_URL=https://sslbl.abuse.ch/blacklist/sslipblacklist.csv
+      - ABUSESSL_INTERVAL=360
+    restart: always
+    networks:
+      - opencti_security
+    depends_on:
+      opencti:
+        condition: ${SERVICE_CONDITION}
+volumes:
+  esdata: null
+  s3data: null
+  redisdata: null
+  amqpdata: null
+networks:
+  opencti_security:
+    external: true
