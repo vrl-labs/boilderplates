@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  orbital-sync:
+    container_name: dns-sync
+    image: mattwebbio/orbital-sync:${ORBITAL_VERSION:-latest}
+    restart: always
+    env_file: ./.env
+networks: {}
