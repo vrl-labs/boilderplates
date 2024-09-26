@@ -1,0 +1,54 @@
+EULA=TRUE
+
+# Server type
+TYPE=PURPUR
+VERSION=1.21.1
+PURPUR_BUILD=LATEST
+
+#TYPE=PAPER
+#VERSION=1.21.1
+#PAPER_BUILD=52
+
+# Defaults
+DIFFICULTY=hard
+MAX_PLAYERS=10
+
+# Server Banner
+MOTD="\u00a7x\u00a7f\u00a7f\u00a76\u00a76\u00a70\u00a70\u00a7lp\u00a7x\u00a7f\u00a7f\u00a75\u00a7d\u00a71\u00a77\u00a7ll\u00a7x\u00a7f\u00a7f\u00a75\u00a73\u00a72\u00a7e\u00a7la\u00a7x\u00a7f\u00a7f\u00a74\u00a7a\u00a74\u00a76\u00a7ly\u00a7x\u00a7f\u00a7f\u00a74\u00a71\u00a75\u00a7d\u00a7l.\u00a7x\u00a7f\u00a7f\u00a73\u00a78\u00a77\u00a74\u00a7lv\u00a7x\u00a7f\u00a7f\u00a72\u00a7e\u00a78\u00a7b\u00a7lr\u00a7x\u00a7f\u00a7f\u00a72\u00a75\u00a7a\u00a72\u00a7ll\u00a7x\u00a7f\u00a7f\u00a71\u00a7c\u00a7b\u00a79\u00a7l.\u00a7x\u00a7f\u00a7f\u00a71\u00a73\u00a7d\u00a71\u00a7ls\u00a7x\u00a7f\u00a7f\u00a70\u00a79\u00a7e\u00a78\u00a7lh\u00A7f\n\u00a7x\u00a70\u00a70\u00a7e\u00a79\u00a7f\u00a7fD\u00a7x\u00a70\u00a7b\u00a7d\u00a7f\u00a7f\u00a7fa\u00a7x\u00a71\u00a75\u00a7d\u00a76\u00a7f\u00a7ft\u00a7x\u00a72\u00a70\u00a7c\u00a7c\u00a7f\u00a7fa\u00a7x\u00a72\u00a7b\u00a7c\u00a72\u00a7f\u00a7fc\u00a7x\u00a73\u00a75\u00a7b\u00a78\u00a7f\u00a7fe\u00a7x\u00a74\u00a70\u00a7a\u00a7f\u00a7f\u00a7fn\u00a7x\u00a74\u00a7a\u00a7a\u00a75\u00a7f\u00a7ft\u00a7x\u00a75\u00a75\u00a79\u00a7b\u00a7f\u00a7fe\u00a7x\u00a76\u00a70\u00a79\u00a72\u00a7f\u00a7fr\u00a7x\u00a76\u00a7a\u00a78\u00a78\u00a7f\u00a7f \u00a7x\u00a77\u00a75\u00a77\u00a7e\u00a7f\u00a7fg\u00a7x\u00a78\u00a70\u00a77\u00a75\u00a7f\u00a7fr\u00a7x\u00a78\u00a7a\u00a76\u00a7b\u00a7f\u00a7fa\u00a7x\u00a79\u00a75\u00a76\u00a71\u00a7f\u00a7fd\u00a7x\u00a79\u00a7f\u00a75\u00a77\u00a7f\u00a7fe\u00a7x\u00a7a\u00a7a\u00a74\u00a7e\u00a7f\u00a7f \u00a7x\u00a7b\u00a75\u00a74\u00a74\u00a7f\u00a7fh\u00a7x\u00a7b\u00a7f\u00a73\u00a7a\u00a7f\u00a7fo\u00a7x\u00a7c\u00a7a\u00a73\u00a71\u00a7f\u00a7fs\u00a7x\u00a7d\u00a75\u00a72\u00a77\u00a7f\u00a7ft\u00a7x\u00a7d\u00a7f\u00a71\u00a7d\u00a7f\u00a7fi\u00a7x\u00a7e\u00a7a\u00a71\u00a73\u00a7f\u00a7fn\u00a7x\u00a7f\u00a74\u00a70\u00a7a\u00a7f\u00a7fg"
+
+# Server properties
+ANNOUNCE_PLAYER_ACHIEVEMENTS=false
+PLAYER_IDLE_TIMEOUT=1800
+MAX_WORLD_SIZE=1000
+ICON=/data/server-icon.png
+OVERRIDE_ICON=true
+FORCE_GAMEMODE=true
+MODE=survival
+PVP=true
+ONLINE_MODE=true
+SPAWN_PROTECTION=0
+VIEW_DISTANCE=10
+LEVEL=world
+
+# Access and Optimization
+UID=1000
+GID=100
+MEMORY=6G
+TZ=CET
+USE_AIKAR_FLAGS=true
+SNOOPER_ENABLED=false
+ENABLE_ROLLING_LOGS=true
+SERVER_NAME="MC Server"
+SERVER_PORT=25565
+
+# Docker Parameters
+JAVA_VER=java21-alpine
+
+#TYPE=FOLIA
+#FOLIABUILD=26
+#FOLIA_DOWNLOAD_URL=<url> # If you made a custom foila build
+
+# Variables found on https://docker-minecraft-server.readthedocs.io/en/latest/variables/
+# RGB banner made with https://rynstwrt.github.io/Minecraft-Server-MOTD-Gradient-Generator/
+# New line in banner discovered with https://mcstatus.io/tools/motd
+# Adding OPs to game with https://xgamingserver.com/blog/adding-an-op-admin-to-minecraft-server-using-ops-json-and-op-username/
