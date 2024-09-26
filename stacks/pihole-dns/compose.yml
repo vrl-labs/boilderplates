@@ -1,0 +1,18 @@
+version: "3.8"
+services:
+  dns-1:
+    image: pihole/pihole:${PIHOLE_VERSION}
+    container_name: pihole-dns-1
+    hostname: ${DNS_DOMAIN}
+    restart: always
+    env_file: ./.env
+    volumes:
+      - ./etc-pihole:/etc/pihole
+      - ./etc-dnsmasq.d:/etc/dnsmasq.d
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - ${PIHOLE_WEBPORT}:80/tcp
+    cap_add:
+      - NET_ADMIN
+networks: {}
